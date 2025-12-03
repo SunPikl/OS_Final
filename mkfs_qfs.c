@@ -94,7 +94,6 @@ int main(int argc, char *argv[]) {
 
     // Calculate block size and counts (TODO: adjust these calculations as needed)
     int total_data_available = (file_size - sizeof(superblock_t) - (sizeof(direntry_t) * 255));
-    sb.bytes_per_block = 512;
 	
 	if (file_size <= 31457280) {
 		sb.bytes_per_block = 512;
