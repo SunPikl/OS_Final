@@ -35,10 +35,14 @@ int main(int argc, char *argv[]) {
 	data.data = malloc(sb.bytes_per_block - 3);
 	int currFile = 1;
 	FILE * newFile;
-	for(int block = 0; block <  sb.total_blocks; block ++){			
+	for(int block = 0; block <  sb.total_blocks; block ++){	
+		// get block data 
+		fread(&data.is_busy, 1, 1, fp); // is block busy		
+		fread(data.data, sb.bytes_per_block - 3, 1, fp); // read the data bytes
+		fread(&data.next_block, sizeof(uint16_t), 1, fp); // read next_block		
 		
 		//if data not free aka has data
-		if(!data.is_busy){
+		if(data.is_busy){
 			//if start of file
 			if(data.data[0] == 0xFF && data.data[1] == 0xD8){
 				
@@ -49,14 +53,21 @@ int main(int argc, char *argv[]) {
 				printf("hi");
 				fflush(stdout);
 				
-				while (data.data[SEEK_END - 1] != 0xFF && data.data[SEEK_END] != 0xD9) {
+				while (1==1) {
 					fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sb.bytes_per_block * data.next_block, SEEK_SET);
 					
 					// get block data 
 					fread(&data.is_busy, 1, 1, fp); // is block busy		
 					fread(data.data, sb.bytes_per_block - 3, 1, fp); // read the data bytes
 					fread(&data.next_block, sizeof(uint16_t), 1, fp); // read next_block
+					
+					if(data.data[0] != 0xFF && data.data[1] != 0xD9){
+						break;
+					}
 				}
+				
+				printf("life is good");
+				fflush(stdout);
 				
 				fclose(newFile);
 			}
