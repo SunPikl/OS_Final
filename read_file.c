@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 		printf("ERROR: File doesn't exist");
 	} else {
 		//find offset and start location
-		uint32_t diroffset = sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sizeof(struct fileblock) * start; //offset
+		uint32_t diroffset = sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sb.bytes_per_block * start; //offset
 		fseek(fp, diroffset, SEEK_SET); // set dir location
 		
 		printf("offset %d", diroffset);
