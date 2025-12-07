@@ -1,5 +1,13 @@
+/**
+ * Reads in a file from QFS and outputs it into an image file
+ * 
+ * Authors: Morgan Montz & Matthew Jones
+ * 
+ **/
+
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include "qfs.h"
 
@@ -21,7 +29,7 @@ int main(int argc, char *argv[]) {
 
 	// store input info
 	char * extractFile = argv[2];
-	FILE * storeFile = fopen(argv[3], "rb+");
+	FILE * storeFile = fopen(argv[3], "wb+");
 	
 
     // Read superblock
@@ -47,9 +55,6 @@ int main(int argc, char *argv[]) {
 		} 
 	}
 	
-	printf("DEBUG 1 %s %d", entry.filename, start);
-	fflush(stdout);
-	
 	//check if file found
 	if(start == -1){
 		printf("ERROR: File doesn't exist");
@@ -58,15 +63,29 @@ int main(int argc, char *argv[]) {
 		uint32_t diroffset = sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sizeof(struct fileblock) * start; //offset
 		fseek(fp, diroffset, SEEK_SET); // set dir location
 		
+		printf("offset %d", diroffset);
+		fflush(stdout);
+		
 		//loop
 		struct fileblock data;
+		data.data = malloc(sb.bytes_per_block - 3);
+		int currSize = entry.file_size;
 		do {
+			//fread(&data, sizeof(data), 1, fp);
+			
 			//read in file info 
-			fread(&data, sizeof(data), 1, fp);
+			fread(&data.is_busy, 1, 1, fp);
+
+			// 2. Read the data bytes
+			fread(data.data, sb.bytes_per_block - 3, 1, fp);
+
+			// 3. Read next_block
+			fread(&data.next_block, sizeof(uint16_t), 1, fp);
 			
 			//write to file
-			fwrite(data.data, sizeof(char), (entry.file_size), storeFile);
-		} while (data.next_block == NULL);
+			fwrite(data.data, sb.bytes_per_block - 3, 1, storeFile);
+			currSize -= (sb.bytes_per_block - 3);
+		} while (currSize >= 0);
 	}
 	
 
