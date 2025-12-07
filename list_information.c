@@ -25,8 +25,6 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
     printf("Opened disk image: %s\n", argv[1]);
 #endif
-
-    //TODO
     
     //store superblock
     superblock_t sb;
