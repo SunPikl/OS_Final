@@ -79,6 +79,7 @@ int main(int argc, char *argv[]) {
 			// Write to file
 			fwrite(data.data, sb.bytes_per_block - 3, 1, storeFile);
 			currSize -= (sb.bytes_per_block - 3);
+            fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sb.bytes_per_block * data.next_block, SEEK_SET);
 		} while (currSize >= 0);
 	}
 
