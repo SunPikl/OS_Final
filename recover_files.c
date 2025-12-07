@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "qfs.h"
 
 int main(int argc, char *argv[]) {
@@ -35,31 +36,37 @@ int main(int argc, char *argv[]) {
 	int currFile = 1;
 	FILE * newFile;
 	for(int block = 0; block <  sb.total_blocks; block ++){			
-		// get block data 
-		fread(&data.is_busy, 1, 1, fp); // is block busy		
-		fread(data.data, sb.bytes_per_block - 3, 1, fp); // read the data bytes
-		fread(&data.next_block, sizeof(uint16_t), 1, fp); // read next_block
 		
 		//if data not free aka has data
 		if(!data.is_busy){
 			//if start of file
 			if(data.data[0] == 0xFF && data.data[1] == 0xD8){
-				//make dir 
 				
-				//
-			} 
+				char str[28];
+				sprintf(str, "recovered_file_%d.jpg", currFile);
+				newFile = fopen(str, "wb+");
+						
+				printf("hi");
+				fflush(stdout);
+				
+				while (data.data[SEEK_END - 1] != 0xFF && data.data[SEEK_END] != 0xD9) {
+					fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sb.bytes_per_block * data.next_block, SEEK_SET);
+					
+					// get block data 
+					fread(&data.is_busy, 1, 1, fp); // is block busy		
+					fread(data.data, sb.bytes_per_block - 3, 1, fp); // read the data bytes
+					fread(&data.next_block, sizeof(uint16_t), 1, fp); // read next_block
+				}
+				
+				fclose(newFile);
+			}
 			
-			//new file
-			//newFile = fopen(
-			
-			//update dir info
+			// printf("bye");
+			// fflush(stdout);
 			
 		}
 		
-		//write to file
-		//fwrite(data.data, sb.bytes_per_block - 3, 1, storeFile);
-		//currSize -= (sb.bytes_per_block - 3);
-	} 
+	}
     // if start 0xFF 0xD8
 	//  set dir info
     //  loop through blocks until no next OR end in 0xFF 0xD9
