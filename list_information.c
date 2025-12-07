@@ -25,15 +25,16 @@ int main(int argc, char *argv[]) {
     fread(&sb, sizeof(superblock_t), 1, fp);
     
     //list all info from block
-    printf("Type: %d\n", sb.fs_type);
+    printf("Block Size: %d\n", sb.bytes_per_block);
     printf("Total Blocks: %d\n", sb.total_blocks);
-    printf("Available Blocks: %d\n", sb.available_blocks);
-    printf("Bytes per Block: %d\n", sb.bytes_per_block);
+    printf("Amount of Free Blocks: %d\n", sb.available_blocks);
     printf("Total Directory Entries: %d\n", sb.total_direntries);
-    printf("Available Directory Entries: %d\n", sb.available_direntries);
-    printf("Reserved: %hhn\n", sb.reserved);
-    printf("Label: %s\n", sb.label);
-    
+    printf("Amount of Free Directory Entries: %d\n", sb.available_direntries);
+	
+	//offset?
+	
+	
+	//all files in directory
 
     fclose(fp);
     return 0;
