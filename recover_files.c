@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
 	int x = 0;
 	FILE * newFile;
 	for(int block = 0; block <  sb.total_blocks; block ++){	
+		fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sb.bytes_per_block * block, SEEK_SET);
 		// get block data 
 		fread(&data.is_busy, 1, 1, fp); // is block busy		
 		fread(data.data, sb.bytes_per_block - 3, 1, fp); // read the data bytes
