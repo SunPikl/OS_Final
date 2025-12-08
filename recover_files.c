@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 	struct fileblock data;
 	data.data = malloc(sb.bytes_per_block - 3);
 	int currFile = 1;
+	int x = 0;
 	FILE * newFile;
 	for(int block = 0; block <  sb.total_blocks; block ++){	
 		// get block data 
@@ -49,11 +50,13 @@ int main(int argc, char *argv[]) {
 				char str[28];
 				sprintf(str, "recovered_file_%d.jpg", currFile);
 				newFile = fopen(str, "wb+");
-						
-				printf("hi");
+				printf("\n%d", currFile);
 				fflush(stdout);
+						
+				// Load in data
+				fwrite(data.data, sb.bytes_per_block - 3, 1, newFile);
 				
-				while (1==1) {
+				while (x == 0) {
 					fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sb.bytes_per_block * data.next_block, SEEK_SET);
 					
 					// get block data 
@@ -61,15 +64,23 @@ int main(int argc, char *argv[]) {
 					fread(data.data, sb.bytes_per_block - 3, 1, fp); // read the data bytes
 					fread(&data.next_block, sizeof(uint16_t), 1, fp); // read next_block
 					
-					if(data.data[0] != 0xFF && data.data[1] != 0xD9){
+					// Load in data
+					fwrite(data.data, sb.bytes_per_block - 3, 1, newFile);
+					
+					if(!data.next_block) {
 						break;
 					}
+					
+					/*
+					if(data.data[0] == 0xFF && data.data[1] == 0xD9) {
+						break;
+					}
+					*/
+
 				}
 				
-				printf("life is good");
-				fflush(stdout);
-				
 				fclose(newFile);
+				currFile++;
 			}
 			
 			// printf("bye");
