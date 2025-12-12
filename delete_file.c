@@ -51,10 +51,12 @@ int main(int argc, char *argv[]) {
 		} 
 	}
 	
+	printf("we deleted directory %d", evilDir);
 	
 	// Shuffle remaining directories over
 	struct direntry currEntry;
-	for(int write = 0; write < (usedDir - evilDir); write++){
+	int numBlocks = 0;
+	for(int write = 1; write < (usedDir - evilDir); write++){
 		// Store current directory entry temporarily
 		fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * (write + evilDir), SEEK_SET);
 		fread(&currEntry, sizeof(currEntry), 1, fp);
@@ -78,9 +80,13 @@ int main(int argc, char *argv[]) {
 		data.data = malloc(sb.bytes_per_block - 3);
 		int currSize = entry.file_size;
 		
+		
 		do {			
+			numBlocks ++;
 			// Read in file info 
-			fread(&data.is_busy, 1, 1, fp);
+			//fread(&data.is_busy, 1, 1, fp);
+			data.is_busy = 1;
+			fwrite(&data.is_busy, sizeof(data.is_busy), 1, fp);
 
 			// Read the data bytes
 			fread(data.data, sb.bytes_per_block - 3, 1, fp);
@@ -89,7 +95,6 @@ int main(int argc, char *argv[]) {
 			fread(&data.next_block, sizeof(uint16_t), 1, fp);
 			
 			// Write to file
-			//fwrite(data.data, sb.bytes_per_block - 3, 1, storeFile);
 			currSize -= (sb.bytes_per_block - 3);
             fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * sb.total_direntries + sb.bytes_per_block * data.next_block, SEEK_SET);
 		} while (currSize >= 0);
@@ -97,7 +102,7 @@ int main(int argc, char *argv[]) {
 	
 	// Fix superblock
     superblock_t tempsb;
-    tempsb.available_blocks = sb.available_blocks;
+    tempsb.available_blocks = sb.available_blocks + numBlocks;
     tempsb.available_direntries = sb.available_direntries + 1;
     tempsb.bytes_per_block = sb.bytes_per_block;
     tempsb.fs_type = sb.fs_type;
@@ -105,8 +110,6 @@ int main(int argc, char *argv[]) {
     memcpy(tempsb.reserved, sb.reserved, sizeof(tempsb.reserved));
     tempsb.total_blocks = sb.total_blocks;
     tempsb.total_direntries = sb.total_direntries;
-    //tempsb.available_blocks = sb.available_blocks + numBlocks;
-    //tempsb.available_direntries = sb.available_direntries + 1;
     
     fseek(fp, 0, SEEK_SET);
     fwrite(&tempsb, sizeof(superblock_t), 1, fp);
