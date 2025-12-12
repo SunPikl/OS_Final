@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 	
 	// Find file
 	int start = -1;
+	int evilDir = -1;
 	struct direntry entry;
 	for(int dir = 0; dir < usedDir; dir ++){
 		// Store file entry
@@ -43,21 +44,26 @@ int main(int argc, char *argv[]) {
         if(!strcmp(entry.filename, removeFile)){
 			start = entry.starting_block;
 			
-			// Clean Entry
-			memset(entry.filename, 0, sizeof(entry.filename));        
-			entry.permissions = 0;          
-			entry.owner_id = 0;            
-			entry.group_id = 0;             
-			entry.starting_block = 0;    
-			entry.file_size = 0;  
-			
-			// Replace Entry
+			// Set to entry location
 			fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * dir, SEEK_SET);
-			fwrite(&entry, sizeof(struct direntry), 1, fp);
-			
+			evilDir = dir;
 			break;
 		} 
 	}
+	
+	
+	// Shuffle remaining directories over
+	struct direntry currEntry;
+	for(int write = 0; write < (usedDir - evilDir); write++){
+		// Store current directory entry temporarily
+		fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * (write + evilDir), SEEK_SET);
+		fread(&currEntry, sizeof(currEntry), 1, fp);
+		
+		// Rewrite
+		fseek(fp, sizeof(superblock_t) + sizeof(struct direntry) * (write + evilDir - 1), SEEK_SET);
+		fwrite(&currEntry, sizeof(struct direntry), 1, fp);
+	}
+
 	          
 	
 	// Check if the file found
@@ -90,9 +96,17 @@ int main(int argc, char *argv[]) {
 	}
 	
 	// Fix superblock
-    superblock_t tempsb = sb;
-    //tempsb.available_blocks = sb.available_blocks + numBlocks;
+    superblock_t tempsb;
+    tempsb.available_blocks = sb.available_blocks;
     tempsb.available_direntries = sb.available_direntries + 1;
+    tempsb.bytes_per_block = sb.bytes_per_block;
+    tempsb.fs_type = sb.fs_type;
+    memcpy(tempsb.label, sb.label, sizeof(tempsb.label));
+    memcpy(tempsb.reserved, sb.reserved, sizeof(tempsb.reserved));
+    tempsb.total_blocks = sb.total_blocks;
+    tempsb.total_direntries = sb.total_direntries;
+    //tempsb.available_blocks = sb.available_blocks + numBlocks;
+    //tempsb.available_direntries = sb.available_direntries + 1;
     
     fseek(fp, 0, SEEK_SET);
     fwrite(&tempsb, sizeof(superblock_t), 1, fp);
