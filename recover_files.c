@@ -58,8 +58,6 @@ int main(int argc, char *argv[]) {
 				char str[28];
 				sprintf(str, "recovered_file_%d.jpg", currFile);
 				newFile = fopen(str, "wb+");
-				printf("\n%d", currFile);
-				fflush(stdout);
 						
 				// Load in data
 				fwrite(data.data, sb.bytes_per_block - 3, 1, newFile);
