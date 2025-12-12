@@ -50,8 +50,6 @@ int main(int argc, char *argv[]) {
 		fread(data.data, sb.bytes_per_block - 3, 1, fp); // Read the data bytes
 		fread(&data.next_block, sizeof(uint16_t), 1, fp); // Read next_block		
 		
-		// If data not free aka has data
-		if(data.is_busy){
 			// If start of file
 			if(data.data[0] == 0xFF && data.data[1] == 0xD8){
 				
@@ -81,9 +79,7 @@ int main(int argc, char *argv[]) {
 				
 				fclose(newFile);
 				currFile++;
-			}
-			
-		}
+			}		
 		
 	}
 
