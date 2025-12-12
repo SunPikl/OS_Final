@@ -51,8 +51,6 @@ int main(int argc, char *argv[]) {
 		} 
 	}
 	
-	printf("we deleted directory %d", evilDir);
-	
 	// Shuffle remaining directories over
 	struct direntry currEntry;
 	int numBlocks = 0;
